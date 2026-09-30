@@ -19,14 +19,14 @@ def retrieve_bad_words(bad_word_file: str) -> set[str]:
         bad_words = [record.lower() for record in records]
         return set(bad_words)
 
-def html_to_text(html: str) -> str:
+def html_to_text(html: bytes) -> str:
     """Converts HTML content to plain text..
     Args:
         html (str): HTML content as a string.
     Returns:
         str: Plain text extracted from HTML.
     """
-    soup = BeautifulSoup(html, 'html.parser')
+    soup = BeautifulSoup(html, 'html.parser') # pyright: ignore[reportArgumentType]
     for element in soup(['script', 'style']):
         element.decompose()
 
@@ -89,8 +89,8 @@ def clean_text(text: str) -> str:
     cleaned_paragraphs = [p for p in paragraphs if filter(p)]
     return '\n'.join(cleaned_paragraphs)
 
-
-def heuristic_quality_filter(text: str, bad_words_set: set) -> bool:
+bad_words_set = retrieve_bad_words('bad_word_list.txt')
+def heuristic_quality_filter(text: str) -> bool:
     """Rejects documents based on the presence of bad words and punctuation.
     Args:
         text (str): document to check
@@ -154,8 +154,6 @@ if __name__ == '__main__' :
     parser.add_argument('--wat_name', type = str, default = 'dataset/data.wat', help = 'Specify the path for your wat file.')
     args = parser.parse_args()
 
-    bad_words_set = retrieve_bad_words(args.bfname)
-
     if args.fname:
         seen = 0
         passes = 0
@@ -163,18 +161,22 @@ if __name__ == '__main__' :
             seen += 1
 
             # print("Before HTML to text: ", str(html_text))
-            text = html_to_text(str(html_text))
+            try:
+                text = html_to_text(html_text)
+            except Exception as e:
+                print(f"Error converting HTML to string: {e}")
+                continue
             # print("\n\n\nAfter HTML to text: ", text)
             cleaned_text = clean_text(text)
             # print("After cleaning: ", cleaned_text)
             cleaned_nopii_text = replace_pii(cleaned_text)
             # print("After PII removal: ", cleaned_nopii_text)
-            passes_check = heuristic_quality_filter(cleaned_nopii_text, bad_words_set)
+            passes_check = heuristic_quality_filter(cleaned_nopii_text)
             print(url)
             print("Passes heuristic quality filter:", passes_check)
             if passes_check:
                 passes += 1
-                # print(cleaned_nopii_text)
+                print(cleaned_nopii_text)
                 print("\n\n")
         print(f"{passes} passed out of {seen} records processed.")
 

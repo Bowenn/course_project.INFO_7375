@@ -11,7 +11,7 @@ curl -o dataset/data.warc.gz --no-clobber ${ROOT}warc/CC-MAIN-20180420081400-201
 gunzip dataset/data.warc.gz
 
 curl -o dataset/data.wet.gz --no-clobber ${ROOT}wet/CC-MAIN-20180420081400-20180420101400-00000.warc.wet.gz
-gunzip data.wet.gz
+gunzip dataset/data.wet.gz
 
 curl -o dataset/data.wat.gz --no-clobber ${ROOT}wat/CC-MAIN-20180420081400-20180420101400-00000.warc.wat.gz
 gunzip dataset/data.wat.gz
