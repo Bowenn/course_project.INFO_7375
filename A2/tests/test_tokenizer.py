@@ -14,9 +14,12 @@ def test_not_injective():
     s1 = "Hello world"
     s2 = "Hello     world"
 
-    assert s1 != s2 and tokenizer.encode(
-        s1, add_special_tokens=False
-    ) == tokenizer.encode(s2, add_special_tokens=False)
+    res1 = tokenizer.encode(s1, add_special_tokens=False)
+    res2 = tokenizer.encode(s2, add_special_tokens=False)
+    print(f"res1: {res1}")
+    print(f"res2: {res2}")
+
+    assert s1 != s2 and res1 == res2
 
 
 def test_not_invertible():
@@ -25,9 +28,11 @@ def test_not_invertible():
     tokenizer_name = "google-bert/bert-base-cased"
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
 
-    s = ...
+    s = "Hello     world"
 
     s_recovered = tokenizer.decode(tokenizer.encode(s, add_special_tokens=False))
+    print(f"s: {s}")
+    print(f"s_recovered: {s_recovered}")
     assert s != s_recovered
 
 
@@ -37,12 +42,14 @@ def test_not_preserving_concat():
     tokenizer_name = "google-bert/bert-base-cased"
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
 
-    a = ...
-    b = ...
-    assert tokenizer.encode(a + b, add_special_tokens=False) != tokenizer.encode(
-        a, add_special_tokens=False
-    ) + tokenizer.encode(b, add_special_tokens=False)
+    a = "Hello"
+    b = "world"
 
+    res1 = tokenizer.encode(a + b, add_special_tokens=False)
+    res2 = tokenizer.encode(a, add_special_tokens=False) + tokenizer.encode(b, add_special_tokens=False)
+    print(f"res1: {res1}")
+    print(f"res2: {res2}")
+    assert res1 != res2
 
 @max_score(5)
 def test_encode():
