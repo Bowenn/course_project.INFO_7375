@@ -20,9 +20,3 @@ python --version
 cd $SLURM_SUBMIT_DIR
 
 python src/lm/train.py "$1"
-
-
-for cfg in configs/sweep/*.yaml; do
-  sbatch --job-name=$(basename $cfg .yaml) scripts/q3.4.sbatch.sh $cfg
-done
-squeue -u $USER
