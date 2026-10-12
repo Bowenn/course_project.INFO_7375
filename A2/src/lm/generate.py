@@ -27,7 +27,8 @@ def softmax_with_temperature(
 
     # to avoid division by 0
     temperature = max(temperature, 1e-5)
-    return ...
+    logits_t = logits / temperature
+    return torch.softmax(logits_t, dim=-1)
 
 
 @torch.inference_mode()
@@ -60,8 +61,46 @@ def generate(
         padding tokens, and 1.0 everywhere else.
     """
 
-    generations = ...
-    perplexity = ...
+    generations = []
+    total_loss, total_count = 0.0, 0
+
+    for i in trange(0, len(prefixes), batch_size):
+        # tokenize and left-pad the batch with the end-of-text token
+        batch = [tokenizer.encode(p) for p in prefixes[i : i + batch_size]]
+        max_len = max(len(ids) for ids in batch)
+        input_ids = torch.tensor(
+            [[tokenizer.eot_token] * (max_len - len(ids)) + ids for ids in batch],
+            dtype=torch.long, device=device,
+        )
+        attention_mask = torch.tensor(
+            [[0.0] * (max_len - len(ids)) + [1.0] * len(ids) for ids in batch],
+            device=device,
+        )
+
+        new_tokens = []
+        for _ in range(max_new_tokens):
+            # the model only accepts n_positions tokens, so keep the most recent ones
+            ctx_ids = input_ids[:, -model.n_positions:]
+            ctx_mask = attention_mask[:, -model.n_positions:]
+            logits = model(ctx_ids, attention_mask=ctx_mask)[:, -1, :]   # (B, V)
+            probs = softmax_with_temperature(logits, temperature)
+            next_token = torch.multinomial(probs, num_samples=1)        # (B, 1)
+
+            new_tokens.append(next_token)
+            input_ids = torch.cat([input_ids, next_token], dim=1)
+            attention_mask = torch.cat(
+                [attention_mask, torch.ones_like(next_token, dtype=attention_mask.dtype)], dim=1
+            )
+
+        gen_ids = torch.cat(new_tokens, dim=1)                          # (B, max_new_tokens)
+        generations.extend(tokenizer.decode(row.tolist()) for row in gen_ids)
+
+        # perplexity of the generated text under the model
+        loss = compute_language_modeling_loss(gen_ids, model(gen_ids))
+        total_loss += loss.item() * gen_ids.shape[0]
+        total_count += gen_ids.shape[0]
+
+    perplexity = math.exp(total_loss / total_count)
 
     print(f"Perplexity: {perplexity}")
     return generations

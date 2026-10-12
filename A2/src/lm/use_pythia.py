@@ -133,7 +133,7 @@ def main():
     device = determine_device()
 
     # initialize pythia tokenizer and model
-    model_name = "EleutherAI/pythia-6.9b"
+    model_name = "EleutherAI/pythia-1.4b"
     tokenizer, model = initialize_pythia(model_name, device)
 
     # generate and save outputs
