@@ -5,3 +5,5 @@ __pycache__
 *.pt
 wandb/
 data/tokens.npz
+submission
+submission.zip
