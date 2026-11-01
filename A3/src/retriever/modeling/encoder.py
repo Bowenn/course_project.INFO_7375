@@ -61,7 +61,7 @@ class EncoderModel(nn.Module):
         """
         Use the atention mask to find the index of each sequence's last token;
         Perform last-token pooling.
-        Apply L2 norm to the embeddings.  
+        Apply L2 norm to the embeddings.
         
         Args:
         - last_hidden_state:  tensor of shape (batch_size, seq_len, hidden_dim)
@@ -70,7 +70,11 @@ class EncoderModel(nn.Module):
         Returns:
         - reps: tensor of shape (batch_size, hidden_dim)
         """
-        raise NotImplementedError()
+
+        token_lens = attention_mask.sum(dim=1) - 1
+        last_tokens = last_hidden_state[torch.arange(last_hidden_state.size(0), device=last_hidden_state.device), token_lens, :]
+        reps = F.normalize(last_tokens, p=2, dim=1)
+        return reps
 
     def encode_text(self, text):
         hidden_states = self.encoder(**text, return_dict=True)
@@ -87,13 +91,14 @@ class EncoderModel(nn.Module):
 
         Args:
         - q_reps:  tensor of shape (n_queries, hidden_dim)
-        - p_reps:  tensor of shape (n_passages, seq_len)
+        - p_reps:  tensor of shape (n_passages, hidden_dim)
         - temperature:  float
 
         Returns:
         - similarity_matrix: tensor of shape (n_queries, n_passages)
         """
-        raise NotImplementedError()
+        similarity_matrix = torch.matmul(q_reps, p_reps.t()) / temperature
+        return similarity_matrix
 
     def compute_labels(self, n_queries, n_passages):
         """
@@ -122,8 +127,11 @@ class EncoderModel(nn.Module):
         Returns:
         - target: tensor of shape (n_queries)
         """
-        raise NotImplementedError()
-    
+        train_group_size = n_passages // n_queries
+        target = torch.arange(0, n_queries) * train_group_size
+
+        return target
+
     def compute_loss(self, scores, target):
         """
         Compute the mean reduced loss.
@@ -135,7 +143,8 @@ class EncoderModel(nn.Module):
         Returns:
         - loss: mean reduced loss.
         """
-        raise NotImplementedError()
+        loss = F.cross_entropy(scores, target, reduction='mean')
+        return loss
 
     def gradient_checkpointing_enable(self, **kwargs):
         try:
