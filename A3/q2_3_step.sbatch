@@ -33,7 +33,7 @@ export PYTHONPATH="${PYTHONPATH:-}:$(pwd)/src"
 export HF_HOME=/scratch/$USER/hf_cache
 mkdir -p "$HF_HOME"
 
-cd "$A3_DIR/retriever"
+cd "$A3_DIR/src/retriever"
 
 echo "===== Step: $STEP | start: $(date) ====="
 case "$STEP" in
