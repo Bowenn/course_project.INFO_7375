@@ -115,7 +115,7 @@ def use_calculator(input: str) -> str:
     try:
         start = input.rindex("<<")
         end = input.rindex(">>")
-        expr = input[start + 1:end]
+        expr = input[start + 2:end]
         result = safe_eval(expr)
         return input + str(result)
     except:
