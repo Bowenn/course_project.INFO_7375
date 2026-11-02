@@ -115,7 +115,10 @@ def get_rag(query_id, doc2text, query2docs, top_n, shuffle):
     Returns:
         str: white-space separeted text of top-N documents.
     """
-    raise NotImplementedError()
+    doc_ids = list(query2docs[str(query_id)][:top_n])   # copy, so shuffle doesn't change the original
+    if shuffle:
+        random.shuffle(doc_ids)
+    return " ".join(doc2text[doc_id] for doc_id in doc_ids)
 
 
 def apply_prompt(prefixes, trec_run, doc2text, query2docs):
@@ -182,14 +185,26 @@ def main():
         dataset = load_dataset('jmvcoelho/toy-corpus', split='train')
         
         docid_to_text = {}
-        raise NotImplementedError()
-        #TODO: parse the huggingface dataset, and populate docid_to_text, mapping the document identifier to its repective content.
+
+        #parse the huggingface dataset, and populate docid_to_text, mapping the document identifier to its repective content.
+        for row in dataset:
+            docid_to_text[str(row["docid"])] = row["text"]
 
         qid_to_topdocs = {}
 
         with open(args.augmentation_run, 'r') as h:
-            raise NotImplementedError()
-            #TODO: Read the run file, and populate qid_to_topdocs, mapping query ids to a list of top-document ids.
+            # Read the run file, and populate qid_to_topdocs, mapping query ids to a list of top-document ids.
+            for line in h:
+                parts = line.split()
+                if len(parts) == 6:      # TREC format: qid Q0 docid rank score tag
+                    qid, docid, score = parts[0], parts[2], float(parts[4])
+                else:                    # Tevatron format: qid docid score
+                    qid, docid, score = parts[0], parts[1], float(parts[2])
+                qid_to_topdocs.setdefault(qid, []).append((score, docid))
+
+        # sort each query's documents by score, highest first, and keep only the ids
+        for qid in qid_to_topdocs:
+            qid_to_topdocs[qid] = [d for _, d in sorted(qid_to_topdocs[qid], reverse=True)]
 
 
     else: # this means that RAG won't be performed.
