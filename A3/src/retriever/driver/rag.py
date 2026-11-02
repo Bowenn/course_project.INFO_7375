@@ -121,13 +121,13 @@ def get_rag(query_id, doc2text, query2docs, top_n, shuffle):
     return " ".join(doc2text[doc_id] for doc_id in doc_ids)
 
 
-def apply_prompt(prefixes, trec_run, doc2text, query2docs):
+def apply_prompt(prefixes, trec_run, doc2text, query2docs, top_n=1, shuffle=False):
 
     new_prefixes = []
 
     for prefix, query_id in prefixes:
         if trec_run is not None:
-            rag = get_rag(query_id, doc2text, query2docs, top_n=1, shuffle=False)
+            rag = get_rag(query_id, doc2text, query2docs, top_n=top_n, shuffle=shuffle)
         else:
             rag = ""
         
@@ -175,6 +175,8 @@ def main():
         default=None,
         help="trec formatted run for RAG",
     )
+    parser.add_argument("--top_n", type=int, default=1, help="number of passages for RAG")
+    parser.add_argument("--shuffle", action="store_true", help="shuffle the top-N passages")
 
     args = parser.parse_args()
 
@@ -213,7 +215,9 @@ def main():
 
     with open(args.prefixes) as f:
         prefixes = [(json.loads(line)["prefix"],  json.loads(line)["qid"])for line in f]
-        prefixes = apply_prompt(prefixes, args.augmentation_run, docid_to_text, qid_to_topdocs)
+        random.seed(42)
+        prefixes = apply_prompt(prefixes, args.augmentation_run, docid_to_text,
+                                qid_to_topdocs, args.top_n, args.shuffle)
 
     max_new_tokens = args.max_new_tokens
     temperature = args.temperature
