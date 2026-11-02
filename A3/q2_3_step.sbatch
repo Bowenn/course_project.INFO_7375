@@ -19,7 +19,7 @@ module load anaconda3/2024.06
 
 . /shared/EL9/explorer/anaconda3/2024.06/etc/profile.d/conda.sh
 eval "$(conda shell.bash hook)"
-conda activate $HOME/p/conda_env/use_h200
+conda activate $HOME/INFO7375.202710/conda-env/a3
 export PYTHONNOUSERSITE=1
 which python
 python --version
