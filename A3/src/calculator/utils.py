@@ -92,7 +92,9 @@ def can_use_calculator(s: str) -> bool:
     Hint:
         Q1.2
     """
-    return ...
+
+
+    return s.endswith("»")
 
 
 def use_calculator(input: str) -> str:
@@ -111,10 +113,14 @@ def use_calculator(input: str) -> str:
     Hint: safe_eval
     """
     try:
-        return ...
+        start = input.rindex("«")
+        end = input.rindex("»")
+        expr = input[start + 1:end]
+        result = safe_eval(expr)
+        return input + str(result)
     except:
         # expression not well formed! fall back to next token prediction
-        return ...
+        return input
 
 
 def extract_label(answer: str) -> float:
