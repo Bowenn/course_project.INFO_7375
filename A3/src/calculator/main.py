@@ -22,6 +22,7 @@ def get_device():
         return torch.device("mps")
     else:
         return torch.device("cpu")
+device = get_device()
 
 def main():
     """Initialize the pre-trained Pythia model"""
