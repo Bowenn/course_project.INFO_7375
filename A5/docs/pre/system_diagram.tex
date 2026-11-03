@@ -1,0 +1,50 @@
+% system_diagram.tex -- StageChat preliminary system design (TikZ)
+% Preamble needs:  \usepackage{tikz}
+%                  \usetikzlibrary{arrows.meta,shapes.geometric}
+\begin{tikzpicture}[
+  font=\footnotesize,
+  >={Stealth[length=2.2mm]},
+  box/.style={rounded corners=2pt, align=center, minimum width=3.0cm,
+              minimum height=1.05cm, inner sep=3pt, thick},
+  actor/.style={box, minimum width=2.0cm, draw=black!70, fill=white},
+  client/.style={box, draw=blue!60!black, fill=blue!7},
+  agentn/.style={box, draw=orange!75!black, fill=orange!12},
+  service/.style={box, draw=green!45!black, fill=green!9},
+  data/.style={cylinder, shape border rotate=90, aspect=0.15, align=center,
+               minimum width=3.0cm, minimum height=1.15cm, inner sep=3pt,
+               thick, draw=gray!70!black, fill=gray!14},
+  lbl/.style={font=\scriptsize\itshape, fill=white, inner sep=1.2pt},
+  flow/.style={->, thick},
+  aux/.style={->, thick, dashed},
+]
+% --- top row: supporting components
+\node[agentn, dashed] (eval) at (4.0, 2.3)  {Evaluation harness\\(benchmark replay)};
+\node[agentn]         (llm)  at (8.0, 2.3)  {LLM adapter\\Claude, OpenAI, DeepSeek};
+\node[data]           (cat)  at (16.4, 2.3) {Asset catalog\\GLB + metadata};
+% --- middle row: request path
+\node[actor]   (user)  at (0, 0)    {User};
+\node[client]  (chat)  at (4.0, 0)  {Chat panel\\(React)};
+\node[agentn]  (agent) at (8.0, 0)  {Agent orchestrator\\(tool-calling loop)};
+\node[service] (tools) at (12.4, 0) {Scene tools\\plan, add, move,\\swap, recolor, undo};
+\node[service] (retr)  at (16.4, 0) {Asset retriever\\embeddings + filters};
+% --- bottom row: commit path
+\node[client]  (viewer) at (0, -2.75)    {3D viewer\\(React Three Fiber)};
+\node[data]    (store)  at (4.0, -2.75)  {Scene-graph store\\(versioned JSON)};
+\node[service] (verif)  at (8.0, -2.75)  {Verifier\\collisions, bounds,\\door clearance};
+\node[service] (solver) at (12.4, -2.75) {Constraint solver\\relations $\rightarrow$ poses};
+% --- arrows
+\draw[flow]      (user)   -- node[lbl, above=1pt] {message} (chat);
+\draw[flow, <->] (chat)   -- (agent);
+\draw[flow, <->] (agent)  -- (llm);
+\draw[aux]       (eval)   -- node[lbl, above, sloped] {replay} (agent.north west);
+\draw[flow]      (agent)  -- node[lbl, above=1pt] {tool call} (tools);
+\draw[flow, <->] (tools)  -- node[lbl, above=1pt] {query} (retr);
+\draw[flow, <->] (retr)   -- (cat);
+\draw[flow]      (tools)  -- node[lbl, right] {relations} (solver);
+\draw[flow]      (solver) -- node[lbl, above=1pt] {poses} (verif);
+\draw[flow]      (verif)  -- node[lbl, above=1pt] {commit} (store);
+\draw[flow]      (verif)  -- node[lbl, right] {violations} (agent);
+\draw[flow]      (store)  -- node[lbl, above=1pt] {render} (viewer);
+\draw[flow]      (viewer) -- node[lbl, left] {sees} (user);
+\draw[aux]       (store.north east) -- node[lbl, sloped, above] {summary} (agent.south west);
+\end{tikzpicture}
