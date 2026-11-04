@@ -1,0 +1,409 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "DoorOpening": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 64,
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "type": "string"
+        },
+        "type": {
+          "const": "door",
+          "type": "string"
+        },
+        "wall": {
+          "$ref": "#/$defs/Wall"
+        },
+        "offset_m": {
+          "description": "From the wall's low-coordinate end to the door's near edge.",
+          "minimum": 0,
+          "type": "number"
+        },
+        "width_m": {
+          "exclusiveMinimum": 0,
+          "maximum": 3.0,
+          "type": "number"
+        },
+        "height_m": {
+          "default": 2.1,
+          "exclusiveMinimum": 0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "wall",
+        "offset_m",
+        "width_m",
+        "height_m"
+      ],
+      "title": "DoorOpening",
+      "type": "object"
+    },
+    "MaterialSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "color": {
+          "anyOf": [
+            {
+              "pattern": "^#[0-9A-Fa-f]{6}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "preset": {
+          "anyOf": [
+            {
+              "maxLength": 64,
+              "pattern": "^[a-z][a-z0-9_]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Material preset name, e.g. 'oak'."
+        }
+      },
+      "required": [
+        "color",
+        "preset"
+      ],
+      "title": "MaterialSpec",
+      "type": "object"
+    },
+    "Pose": {
+      "additionalProperties": false,
+      "properties": {
+        "x": {
+          "description": "Pivot (bottom center) along x, meters.",
+          "type": "number"
+        },
+        "z": {
+          "description": "Pivot (bottom center) along z, meters.",
+          "type": "number"
+        },
+        "y": {
+          "default": 0.0,
+          "description": "Pivot height; above 0 only for objects resting on others.",
+          "minimum": 0,
+          "type": "number"
+        },
+        "rot_y_deg": {
+          "default": 0.0,
+          "description": "Yaw in degrees, normalized to [0, 360). 0 faces south, 90 east.",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "z",
+        "y",
+        "rot_y_deg"
+      ],
+      "title": "Pose",
+      "type": "object"
+    },
+    "Relation": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "$ref": "#/$defs/RelationType"
+        },
+        "subject": {
+          "maxLength": 64,
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "type": "string"
+        },
+        "target": {
+          "description": "An object, opening, wall, zone, or 'room', by relation type.",
+          "maxLength": 64,
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "subject",
+        "target"
+      ],
+      "title": "Relation",
+      "type": "object"
+    },
+    "RelationType": {
+      "enum": [
+        "against_wall",
+        "facing",
+        "next_to",
+        "in_front_of",
+        "near_opening",
+        "centered_in",
+        "on_top_of",
+        "aligned_with"
+      ],
+      "title": "RelationType",
+      "type": "string"
+    },
+    "Room": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "$ref": "#/$defs/RoomType"
+        },
+        "size_m": {
+          "$ref": "#/$defs/RoomSize"
+        },
+        "openings": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "door": "#/$defs/DoorOpening",
+                "window": "#/$defs/WindowOpening"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/DoorOpening"
+              },
+              {
+                "$ref": "#/$defs/WindowOpening"
+              }
+            ]
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "type",
+        "size_m",
+        "openings"
+      ],
+      "title": "Room",
+      "type": "object"
+    },
+    "RoomSize": {
+      "additionalProperties": false,
+      "properties": {
+        "width": {
+          "description": "Extent along x (west -> east), meters.",
+          "maximum": 20.0,
+          "minimum": 1.0,
+          "type": "number"
+        },
+        "depth": {
+          "description": "Extent along z (north -> south), meters.",
+          "maximum": 20.0,
+          "minimum": 1.0,
+          "type": "number"
+        },
+        "height": {
+          "default": 2.7,
+          "description": "Ceiling height, meters.",
+          "maximum": 6.0,
+          "minimum": 2.0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "width",
+        "depth",
+        "height"
+      ],
+      "title": "RoomSize",
+      "type": "object"
+    },
+    "RoomType": {
+      "enum": [
+        "living_room",
+        "bedroom",
+        "dining_room"
+      ],
+      "title": "RoomType",
+      "type": "string"
+    },
+    "SceneObject": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 64,
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "type": "string"
+        },
+        "name": {
+          "description": "e.g. 'grey three-seat sofa'.",
+          "maxLength": 80,
+          "minLength": 1,
+          "type": "string"
+        },
+        "category": {
+          "description": "Catalog category, e.g. 'coffee_table'.",
+          "maxLength": 64,
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "type": "string"
+        },
+        "asset_id": {
+          "description": "Id of the record in assets/catalog.json.",
+          "maxLength": 64,
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "type": "string"
+        },
+        "pose": {
+          "$ref": "#/$defs/Pose"
+        },
+        "materials": {
+          "additionalProperties": {
+            "$ref": "#/$defs/MaterialSpec"
+          },
+          "description": "Overrides per material slot.",
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "category",
+        "asset_id",
+        "pose",
+        "materials"
+      ],
+      "title": "SceneObject",
+      "type": "object"
+    },
+    "Wall": {
+      "enum": [
+        "north",
+        "south",
+        "west",
+        "east"
+      ],
+      "title": "Wall",
+      "type": "string"
+    },
+    "WindowOpening": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 64,
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "type": "string"
+        },
+        "type": {
+          "const": "window",
+          "type": "string"
+        },
+        "wall": {
+          "$ref": "#/$defs/Wall"
+        },
+        "offset_m": {
+          "description": "From the wall's low-coordinate end to the window's near edge.",
+          "minimum": 0,
+          "type": "number"
+        },
+        "width_m": {
+          "exclusiveMinimum": 0,
+          "maximum": 6.0,
+          "type": "number"
+        },
+        "sill_m": {
+          "default": 0.9,
+          "description": "Height of the bottom edge.",
+          "minimum": 0,
+          "type": "number"
+        },
+        "height_m": {
+          "default": 1.2,
+          "exclusiveMinimum": 0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "wall",
+        "offset_m",
+        "width_m",
+        "sill_m",
+        "height_m"
+      ],
+      "title": "WindowOpening",
+      "type": "object"
+    },
+    "Zone": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 64,
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "type": "string"
+        },
+        "label": {
+          "description": "e.g. 'seating area'.",
+          "maxLength": 80,
+          "minLength": 1,
+          "type": "string"
+        },
+        "objects": {
+          "items": {
+            "maxLength": 64,
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "objects"
+      ],
+      "title": "Zone",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "0.1",
+      "type": "string"
+    },
+    "room": {
+      "$ref": "#/$defs/Room"
+    },
+    "zones": {
+      "items": {
+        "$ref": "#/$defs/Zone"
+      },
+      "type": "array"
+    },
+    "objects": {
+      "items": {
+        "$ref": "#/$defs/SceneObject"
+      },
+      "type": "array"
+    },
+    "relations": {
+      "items": {
+        "$ref": "#/$defs/Relation"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "room",
+    "zones",
+    "objects",
+    "relations"
+  ],
+  "title": "Scene",
+  "type": "object"
+}

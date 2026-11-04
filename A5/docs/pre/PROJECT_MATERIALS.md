@@ -421,7 +421,9 @@ stagechat/
 
 ## Appendix B. Conventions & data formats
 
-**Units & axes.** Meters. +Y is up, and an object's front faces +Z (the glTF convention). The floor is at y = 0. Room coordinates: x ∈ [0, width] runs west → east, z ∈ [0, depth] runs south → north. `rot_y_deg = 0` means the object faces +Z (north). Each object's pivot is the bottom center of its bounding box. Collisions are checked on the floor plane as oriented rectangles plus height intervals.
+**Units & axes.** Meters. +Y is up, and an object's front faces +Z (the glTF convention). The floor is at y = 0. Room coordinates: x ∈ [0, width] runs west → east, z ∈ [0, depth] runs **north → south**. This keeps the frame right-handed like three.js and glTF: seen from above with north at the top, east is on the right. `rot_y_deg = 0` means the object faces +Z (south); positive angles turn counterclockwise seen from above (three.js `rotation.y`), so 90 faces east, 180 north, and 270 west. Each object's pivot is the bottom center of its bounding box. Collisions are checked on the floor plane as oriented rectangles plus height intervals.
+
+**Walls & openings.** Wall ids: `wall_north` (z = 0), `wall_south` (z = depth), `wall_west` (x = 0), `wall_east` (x = width). An opening's `offset_m` is the distance along its wall from the wall's low-coordinate end (x = 0 for the north and south walls, z = 0 for the west and east walls) to the opening's near edge.
 
 **Catalog record (`assets/catalog.json`)**
 
@@ -467,7 +469,7 @@ stagechat/
       "name": "grey three-seat sofa",
       "category": "sofa",
       "asset_id": "kenney_sofa_01",
-      "pose": { "x": 2.0, "z": 0.5, "rot_y_deg": 0 },
+      "pose": { "x": 2.0, "z": 4.5, "rot_y_deg": 180 },
       "materials": { "fabric": { "color": "#8A8F98" } }
     },
     {
@@ -475,7 +477,7 @@ stagechat/
       "name": "oak coffee table",
       "category": "coffee_table",
       "asset_id": "kenney_table_coffee_01",
-      "pose": { "x": 2.0, "z": 1.6, "rot_y_deg": 0 },
+      "pose": { "x": 2.0, "z": 3.4, "rot_y_deg": 180 },
       "materials": { "top": { "preset": "oak" } }
     }
   ],

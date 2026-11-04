@@ -1,0 +1,55 @@
+{
+  "schema_version": "0.1",
+  "room": {
+    "type": "living_room",
+    "size_m": { "width": 4.0, "depth": 5.0, "height": 2.7 },
+    "openings": [
+      { "id": "door_1", "type": "door", "wall": "east", "offset_m": 0.5, "width_m": 0.9 },
+      {
+        "id": "window_1",
+        "type": "window",
+        "wall": "north",
+        "offset_m": 1.2,
+        "width_m": 1.6,
+        "sill_m": 0.8
+      }
+    ]
+  },
+  "zones": [
+    {
+      "id": "zone_seating",
+      "label": "seating area",
+      "objects": ["sofa_1", "coffee_table_1", "armchair_1"]
+    }
+  ],
+  "objects": [
+    {
+      "id": "sofa_1",
+      "name": "grey three-seat sofa",
+      "category": "sofa",
+      "asset_id": "kenney_sofa_01",
+      "pose": { "x": 2.0, "z": 4.5, "rot_y_deg": 180 },
+      "materials": { "fabric": { "color": "#8A8F98" } }
+    },
+    {
+      "id": "coffee_table_1",
+      "name": "oak coffee table",
+      "category": "coffee_table",
+      "asset_id": "kenney_table_coffee_01",
+      "pose": { "x": 2.0, "z": 3.4, "rot_y_deg": 180 },
+      "materials": { "top": { "preset": "oak" } }
+    },
+    {
+      "id": "armchair_1",
+      "name": "green armchair",
+      "category": "armchair",
+      "asset_id": "kenney_armchair_01",
+      "pose": { "x": 0.8, "z": 3.4, "rot_y_deg": 90 }
+    }
+  ],
+  "relations": [
+    { "type": "against_wall", "subject": "sofa_1", "target": "wall_south" },
+    { "type": "in_front_of", "subject": "coffee_table_1", "target": "sofa_1" },
+    { "type": "facing", "subject": "armchair_1", "target": "coffee_table_1" }
+  ]
+}

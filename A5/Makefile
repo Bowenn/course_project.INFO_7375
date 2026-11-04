@@ -2,10 +2,10 @@
 
 WEB := apps/web
 
-.PHONY: check test lint format api web env-check
+.PHONY: check test lint format schemas schemas-check api web env-check
 
 # Everything that must pass before a commit
-check: test lint
+check: test lint schemas-check
 	cd $(WEB) && npm run lint && npm run build
 
 test: env-check
@@ -18,6 +18,16 @@ lint: env-check
 format: env-check
 	python -m ruff format .
 	python -m ruff check --fix .
+
+# Regenerate the JSON Schema from the Pydantic models, then the TypeScript types from it
+schemas: env-check
+	python tools/export_schemas.py
+	cd $(WEB) && npm run gen:types
+
+# Fail if a generated schema or type file is out of date
+schemas-check: env-check
+	python tools/export_schemas.py --check
+	cd $(WEB) && npm run check:types
 
 api: env-check
 	python -m uvicorn server.api:app --reload --reload-dir server --port 8000
