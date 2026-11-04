@@ -1,0 +1,28 @@
+# Secrets: only the template is tracked
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+.pytest_cache/
+.ruff_cache/
+
+# Node / frontend
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Assets: raw downloads are never committed; processed GLBs are rebuilt by `make assets`
+assets/raw/
+assets/processed/
+
+# Local LLM response cache and call logs
+.cache/
+logs/
+
+# OS
+.DS_Store

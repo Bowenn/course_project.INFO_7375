@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools==84.2.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stagechat"
+version = "0.1.0"
+description = "A tool-using LLM agent for conversational 3D room staging"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "fastapi==0.162.0",
+    "pydantic==2.14.2",
+    "uvicorn==0.54.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "httpx2==2.16.0",
+    "pytest==9.2.0",
+    "ruff==0.17.3",
+]
+
+[tool.setuptools.packages.find]
+include = ["server*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --import-mode=importlib"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["apps", "assets", "docs", "report"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
